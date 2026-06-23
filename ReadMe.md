@@ -6,5 +6,5 @@ SSHM is a [OpenSSH](https://github.com/PowerShell/openssh-portable)-Fork.
 
 ```
 git fetch upstream --no-tags
-git subtree pull --prefix=Other/Resources/Upstream upstream master
+git subtree pull --prefix=Other/Resources/Upstream upstream latestw_all
 ```
