@@ -4,9 +4,12 @@
   <version>1.0.1</version>
   <codeunitownername>Marius Göcke</codeunitownername>
   <codeunitowneremailaddress>marius.goecke@gmail.com</codeunitowneremailaddress>
-  <properties codeunithastestablesourcecode="false" codeunithasupdatabledependencies="false" throwexceptionifcodeunitfilecannotbevalidated="true" developmentstate="Active development" description="SSHM compiles the bundled Win32-OpenSSH upstream (located at the repository-level folder Other/Resources/Upstream) and provides the resulting OpenSSH-for-Windows binaries as build-artifact.">
+  <properties codeunithastestablesourcecode="false" codeunithasupdatabledependencies="false" throwexceptionifcodeunitfilecannotbevalidated="true" developmentstate="Active development" description="SSHM compiles the Win32-OpenSSH upstream, copied by CommonTasks.py from the repository-level folder Other/Resources/Upstream into the sourcecode-folder (src) of this codeunit, and provides the resulting OpenSSH-for-Windows binaries as build-artifact.">
     <testsettings minimalcodecoverageinpercent="0" />
-    <pipelinedemands />
+    <pipelinedemands>
+      <pipelinedemand name="msbuild" />
+      <pipelinedemand name="visual-studio-component-vc-tools-x86-x64-spectre-mitigated" />
+    </pipelinedemands>
     <updatesettings>
       <ignoreddependencies />
     </updatesettings>
