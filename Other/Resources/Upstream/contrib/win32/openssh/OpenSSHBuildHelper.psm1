@@ -196,9 +196,36 @@ function Start-OpenSSHBootstrap
     else {
         $MSBuildPath = Get-VS2015BuildToolPath
     }
-    if ($MSBuildPath | Select-String "2022")
+    # SSHM: Visual Studio is recognized by the year in its installation-path, which only works up to Visual
+    # Studio 2022: a newer version installs into a folder which is named after its major-version (Visual Studio
+    # 2026 for example installs into "Visual Studio\18\..."), so it fell into the branch further below which
+    # assumes Visual Studio 2015 and then failed with "Cannot bind argument to parameter 'Path' because it is
+    # null", because the environment-variable of Visual Studio 2015 does not exist. Such a version has the same
+    # layout as Visual Studio 2022, so it is treated like it.
+    $visualStudioIsRecognizedByItsPath = ($MSBuildPath | Select-String "2022|2019|2017")
+    $visualStudioIsNewerThan2022 = (-not $visualStudioIsRecognizedByItsPath) -and ($null -ne $VisualStudioPath) -and (Test-Path (Join-Path $VisualStudioPath 'vc/auxiliary/build'))
+    if (($MSBuildPath | Select-String "2022") -or $visualStudioIsNewerThan2022)
     {
-        $env:vctargetspath = Join-Path $VisualStudioPath "MSBuild\Microsoft\VC\v170\"
+        if ($visualStudioIsNewerThan2022)
+        {
+            # SSHM: a newer Visual Studio brings several folders of c++-targets beside each other (Visual Studio
+            # 2026 brings "v170" and "v180"), and each of them knows other platform-toolsets: "v180" knows the
+            # toolset of Visual Studio 2026, "v170" the one of Visual Studio 2022. The projects of this product
+            # are built with the toolset "v143" (see the vcxproj-files), so the folder which is used is the one
+            # which knows that toolset - taking the newest folder would let the build fail with "The build
+            # tools for Visual Studio 2022 (Platform Toolset = 'v143') cannot be found".
+            $toolsetOfTheProjects = "v143"
+            $folderOfTheCppTargets = Get-ChildItem -Path (Join-Path $VisualStudioPath "MSBuild\Microsoft\VC") -Directory | Where-Object { Test-Path (Join-Path $_.FullName "Platforms\$NativeHostArch\PlatformToolsets\$toolsetOfTheProjects") } | Sort-Object -Property Name | Select-Object -Last 1
+            if ($null -eq $folderOfTheCppTargets)
+            {
+                Write-BuildMsg -AsError -ErrorAction Stop -Message "The platform-toolset '$toolsetOfTheProjects' was not found in any of the c++-targets below '$(Join-Path $VisualStudioPath "MSBuild\Microsoft\VC")'. Please add the component 'MSVC v143 - VS 2022 C++ build tools' to the installation of Visual Studio."
+            }
+            $env:vctargetspath = $folderOfTheCppTargets.FullName + "\"
+        }
+        else
+        {
+            $env:vctargetspath = Join-Path $VisualStudioPath "MSBuild\Microsoft\VC\v170\"
+        }
         if ($null -eq $env:VS170COMNTOOLS)
         {
             $env:VS170COMNTOOLS = Get-BuildToolPath -VSInstallPath $VisualStudioPath -version "2022"
