@@ -1,3 +1,4 @@
 ImageName;UpstreamRegistryAddress;DefaultTag
 Syft;docker.io/anchore/syft;v1.41.2
-SCBuilder;aniondev/scbuilder;v1.2.9
+SCBuilder;aniondev/scbuilder;v1.2.13
+PlantUML;plantuml/plantuml;1.2026.8
